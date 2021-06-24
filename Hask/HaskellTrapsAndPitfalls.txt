@@ -1,0 +1,28 @@
+haskell缺陷与陷阱 / haskell : The Bad Part
+
+内容来源：
+
+https://www.yesodweb.com/blog/2011/09/limitations-of-haskell
+
+https://www.snoyman.com/blog/2020/10/haskell-bad-parts-1
+
+
+foldl
+
+不止一个人想过要把Prelude和Data.List里的foldl函数换成foldl'了。在长期的实践中，haskeller们实在没找到有什么合理的使用场景需要惰性求值+尾递归，顺便还有通过foldl定义的sum，product。尽管现在的foldl使用了很多优化措施，但是惰性就是惰性。
+
+有些人认为惰性的foldl在Vector上表现很好，所以应该保留。但是这应用场景说实在的太窄了。应该把惰性版本的foldl命名成foldLazy才对。(原作者的命名是foldlButLazyIReallyMeanIt)
+
+sum/product
+
+额，上面不是说过了？
+
+实际上sum/product现在是Foldable类型类下属的函数了，针对list，它的确是使用foldl的特化实现，但是对于一些只实现了最小实例的类型构造子t，还是foldMap搞定。现在换成树形递归哪里不好？和+,*有点不搭，因为+,*它们对自己的参数都是急切求值的。我无意指责+和*, 但是sum/product实现成累积器模式会比较好。转换为list再用foldl'处理会产生不必要的中间列表，大概是时候看看砍伐律/酸雨律了。
+
+或许有人会说，GHC会做这些优化的! 不要这样，期待GHC会把烂出水准的代码优化成一般般的代码，还不如现在就去改行来的爽利。
+
+partial function
+
+Record
+
+
